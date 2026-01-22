@@ -204,32 +204,49 @@
 <div>@Copyright Abhishek-Kumar</div>
 <script>
     // Copy function
-  
 function copyCode(button) {
     const codeElement = button.nextElementSibling;
-    const text = codeElement.innerText;
+    const text = codeElement.textContent.trim();
 
+    // Always try modern API first
     if (navigator.clipboard && window.isSecureContext) {
-        // Modern API (HTTPS / localhost)
-        navigator.clipboard.writeText(text).then(() => success(button));
+        navigator.clipboard.writeText(text)
+            .then(() => success(button))
+            .catch(() => legacyCopy(text, button));
     } else {
-        // Fallback for file:// or http
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus();
-        textarea.select();
-
-        try {
-            document.execCommand("copy");
-            success(button);
-        } catch (err) {
-            alert("Copy failed. Please copy manually.");
-        }
-        document.body.removeChild(textarea);
+        legacyCopy(text, button);
     }
+}
+
+function legacyCopy(text, button) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+        document.execCommand("copy");
+        success(button);
+    } catch (e) {
+        alert("Copy blocked by browser. Please copy manually.");
+    }
+
+    document.body.removeChild(textarea);
+}
+
+function success(button) {
+    const original = button.innerText;
+    button.innerText = "DONE!";
+    button.classList.add("success");
+
+    setTimeout(() => {
+        button.innerText = original;
+        button.classList.remove("success");
+    }, 1200);
 }
 
 function success(button) {
