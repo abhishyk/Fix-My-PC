@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Troubleshooting Tool by Abhishek </title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --terminal-green: #00ff41;
+            --dim-green: #003b00;
+            --border-color: #00ff41;
+            --text-main: #00ff41;
+            --cmd-white: #ffffff; /* Reverted to White */
+            --glow: 0 0 12px rgba(0, 255, 65, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 40px 20px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Scanline CRT Effect */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            z-index: 10;
+            background-size: 100% 3px;
+            pointer-events: none;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Glitch Header */
+        .glitch {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 5px;
+            animation: glitch 4s infinite;
+            color: var(--terminal-green);
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 #ff0000, -2px 0 #0000ff; }
+            1% { text-shadow: -2px 0 #ff0000, 2px 0 #0000ff; }
+            2% { text-shadow: none; }
+            100% { text-shadow: none; }
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            border-right: 2px solid var(--terminal-green);
+            white-space: nowrap;
+            overflow: hidden;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+        }
+
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink { from, to { border-color: transparent } 50% { border-color: var(--terminal-green) } }
+
+        /* Staggered Card Animation */
+        .tip-card {
+            background: rgba(0, 10, 0, 0.85);
+            border: 1px solid var(--dim-green);
+            padding: 20px;
+            margin-bottom: 25px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.5s forwards;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .tip-card:hover {
+            border-color: var(--terminal-green);
+            box-shadow: var(--glow);
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tip-card:nth-child(1) { animation-delay: 0.2s; }
+        .tip-card:nth-child(2) { animation-delay: 0.4s; }
+        .tip-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .tip-header {
+            color: #000;
+            background: var(--terminal-green);
+            padding: 2px 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        /* CODE BLOCK - White Text Focus */
+        .code-container {
+            position: relative;
+            background: #000;
+            border: 1px solid #333;
+            padding: 25px 15px 15px 15px;
+            margin-top: 10px;
+        }
+
+        code {
+            color: var(--cmd-white); /* Pure White Command */
+            font-size: 1.1rem;
+            display: block;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0; right: 0;
+            background: #222;
+            color: var(--terminal-green);
+            border: 1px solid var(--dim-green);
+            padding: 4px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .copy-btn:hover {
+            background: var(--terminal-green);
+            color: #000;
+        }
+
+        .copy-btn.success {
+            background: var(--cmd-white);
+            color: #000;
+            border-color: var(--cmd-white);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+    <div class="glitch">Code by Someone</div>
+    <div class="subtitle">> वास्तविकता अक्सर निराशाजनक होती है.....Thanos!</div>
+
+    <div class="tip-card">
+        <span class="tip-header">0x01 // Win Tool By @bhishek</span>
+        <p>Copy this CMD in Powershell to troubleshoot Multiple windows Issues:</p>
+        <div class="code-container">
+            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
+            <code> irm https://raw.githubusercontent.com/abhishyk/ps-bootstrap/main/bootstrap.ps1 | iex</code>
+        </div>
+    </div>
+<div class="tip-card">
+        <span class="tip-header">0x02 // Activate windows or Office</span>
+        <p>To activate Windows or Office copy this cmd in powershell and press enter:</p>
+        <div class="code-container">
+            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
+            <code>irm https://get.activated.win | iex</code>
+        </div>
+    </div>
+    <div class="tip-card">
+        <span class="tip-header">0x03 // Bypass Win10/11 Account</span>
+        <p>Bypass Microsoft Account During Initial Windows Setup:<br>Press shift+F10 to open CMD, at this prompt type </p>
+        <div class="code-container">
+            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
+            <code>start ms-cxh:localonly</code>
+        </div>
+    </div>
+
+    <div class="tip-card">
+        <span class="tip-header">0x03 // LOCAL_SERVER</span>
+        <p>Host files instantly via Python 3:</p>
+        <div class="code-container">
+            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
+            <code>python3 -m http.server 4444</code>
+        </div>
+    </div>
+</div>
+<div>@Copyright Abhishek-Kumar</div>
+<script>
+    // Copy function
+    function copyCode(button) {
+        const codeElement = button.nextElementSibling;
+        const text = codeElement.innerText;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = button.innerText;
+            button.innerText = "DONE!";
+            button.classList.add('success');
+            setTimeout(() => {
+                button.innerText = originalText;
+                button.classList.remove('success');
+            }, 1200);
+        });
+    }
+
+    // Background Particles
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.speedY = Math.random() * 0.5 + 0.2;
+            this.opacity = Math.random() * 0.5;
+        }
+        update() {
+            this.y += this.speedY;
+            if (this.y > canvas.height) this.y = 0;
+        }
+        draw() {
+            ctx.fillStyle = `rgba(0, 255, 65, ${this.opacity})`;
+            ctx.fillRect(this.x, this.y, 1, 1);
+        }
+    }
+
+    function init() {
+        for (let i = 0; i < 80; i++) particles.push(new Particle());
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+</script>
+
+</body>
+</html>
