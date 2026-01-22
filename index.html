@@ -204,21 +204,43 @@
 <div>@Copyright Abhishek-Kumar</div>
 <script>
     // Copy function
-    function copyCode(button) {
-        const codeElement = button.nextElementSibling;
-        const text = codeElement.innerText;
+  
+function copyCode(button) {
+    const codeElement = button.nextElementSibling;
+    const text = codeElement.innerText;
 
-        navigator.clipboard.writeText(text).then(() => {
-            const originalText = button.innerText;
-            button.innerText = "DONE!";
-            button.classList.add('success');
-            setTimeout(() => {
-                button.innerText = originalText;
-                button.classList.remove('success');
-            }, 1200);
-        });
+    if (navigator.clipboard && window.isSecureContext) {
+        // Modern API (HTTPS / localhost)
+        navigator.clipboard.writeText(text).then(() => success(button));
+    } else {
+        // Fallback for file:// or http
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+
+        try {
+            document.execCommand("copy");
+            success(button);
+        } catch (err) {
+            alert("Copy failed. Please copy manually.");
+        }
+        document.body.removeChild(textarea);
     }
+}
 
+function success(button) {
+    const originalText = button.innerText;
+    button.innerText = "DONE!";
+    button.classList.add('success');
+    setTimeout(() => {
+        button.innerText = originalText;
+        button.classList.remove('success');
+    }, 1200);
+}
     // Background Particles
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
