@@ -3,159 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Windows Troubleshooting Tool by Abhishek </title>
+    <title>WinOps Terminal | Abhishek</title>
     <style>
         :root {
-            --bg-color: #050505;
+            --bg-color: #080808;
             --terminal-green: #00ff41;
             --dim-green: #003b00;
-            --border-color: #00ff41;
+            --card-bg: rgba(10, 15, 10, 0.9);
             --text-main: #00ff41;
-            --cmd-white: #ffffff; /* Reverted to White */
-            --glow: 0 0 12px rgba(0, 255, 65, 0.4);
+            --cmd-white: #e0e0e0;
+            --glow: 0 0 15px rgba(0, 255, 65, 0.3);
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Courier New', Courier, monospace;
-            padding: 40px 20px;
+            font-family: 'Segoe UI', 'Courier New', monospace;
             margin: 0;
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Scanline CRT Effect */
-        body::after {
+        /* CRT Scanline Effect */
+        body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            z-index: 10;
+            z-index: 100;
             background-size: 100% 3px;
             pointer-events: none;
         }
 
-        #bg-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 0;
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(5, 5, 5, 0.95);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--dim-green);
+            z-index: 50;
+            backdrop-filter: blur(10px);
         }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 5;
-        }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
 
-        /* Glitch Header */
         .glitch {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            text-transform: uppercase;
             text-align: center;
-            margin-bottom: 5px;
-            animation: glitch 4s infinite;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
             color: var(--terminal-green);
         }
 
-        @keyframes glitch {
-            0% { text-shadow: 2px 0 #ff0000, -2px 0 #0000ff; }
-            1% { text-shadow: -2px 0 #ff0000, 2px 0 #0000ff; }
-            2% { text-shadow: none; }
-            100% { text-shadow: none; }
+        .search-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .subtitle {
-            text-align: center;
-            margin-bottom: 40px;
-            opacity: 0.8;
-            border-right: 2px solid var(--terminal-green);
-            white-space: nowrap;
-            overflow: hidden;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-            animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
-        }
-
-        @keyframes typing { from { width: 0 } to { width: 100% } }
-        @keyframes blink { from, to { border-color: transparent } 50% { border-color: var(--terminal-green) } }
-
-        /* Staggered Card Animation */
-        .tip-card {
-            background: rgba(0, 10, 0, 0.85);
+        #searchInput {
+            width: 100%;
+            background: #000;
             border: 1px solid var(--dim-green);
-            padding: 20px;
-            margin-bottom: 25px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideIn 0.5s forwards;
-            transition: border 0.3s, box-shadow 0.3s;
+            padding: 12px 20px;
+            color: var(--terminal-green);
+            font-family: inherit;
+            font-size: 1rem;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s;
         }
 
-        .tip-card:hover {
+        #searchInput:focus {
             border-color: var(--terminal-green);
             box-shadow: var(--glow);
         }
 
-        @keyframes slideIn {
-            to { opacity: 1; transform: translateY(0); }
+        .stats {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-align: center;
+            opacity: 0.7;
         }
 
-        .tip-card:nth-child(1) { animation-delay: 0.2s; }
-        .tip-card:nth-child(2) { animation-delay: 0.4s; }
-        .tip-card:nth-child(3) { animation-delay: 0.6s; }
+        #tipsContainer { margin-top: 30px; padding-bottom: 100px; }
+
+        .tip-card {
+    background: var(--card-bg);
+    border: 1px solid var(--dim-green);
+    padding: 20px;
+    margin-bottom: 25px; /* Added more space between cards */
+    border-radius: 4px;
+    transition: transform 0.2s, border 0.3s;
+    
+    /* FIXES FOR OVERFLOW */
+    height: auto;           /* Let it grow naturally */
+    min-height: 100px;      /* Minimum size */
+    display: block;         /* Ensure it behaves as a block */
+    overflow: hidden;       /* Keep child elements inside rounded corners */
+}
+
+        .tip-card:hover {
+            border-color: var(--terminal-green);
+            transform: translateX(5px);
+            box-shadow: var(--glow);
+        }
 
         .tip-header {
-            color: #000;
-            background: var(--terminal-green);
-            padding: 2px 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
-            display: inline-block;
         }
 
-        /* CODE BLOCK - White Text Focus */
-        .code-container {
-            position: relative;
-            background: #000;
-            border: 1px solid #333;
-            padding: 25px 15px 15px 15px;
-            margin-top: 10px;
+        .tip-id {
+            background: var(--terminal-green);
+            color: #000;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
+
+        .category-tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            border: 1px solid var(--terminal-green);
+            padding: 1px 6px;
+        }
+
+        .tip-title {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #fff;
+            font-weight: bold;
+        }
+
+       .code-box {
+    position: relative;
+    background: #000;
+    border: 1px solid #222;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 3px;
+    
+    /* FIXES FOR LONG COMMANDS */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
         code {
-            color: var(--cmd-white); /* Pure White Command */
-            font-size: 1.1rem;
-            display: block;
-            word-break: break-all;
-        }
+    color: var(--cmd-white);
+    font-family: 'Consolas', monospace;
+    font-size: 0.95rem;
+    
+    /* These lines prevent the command from shooting out the right side */
+    white-space: pre-wrap;      /* Wraps the text to next line */
+    word-break: break-all;     /* Breaks long strings */
+    display: block;
+    width: 85%;                /* Leaves space for the copy button */
+}
 
         .copy-btn {
             position: absolute;
-            top: 0; right: 0;
-            background: #222;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1a1a1a;
             color: var(--terminal-green);
             border: 1px solid var(--dim-green);
-            padding: 4px 12px;
+            padding: 5px 12px;
             cursor: pointer;
-            font-family: inherit;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
+            font-weight: bold;
         }
 
-        .copy-btn:hover {
-            background: var(--terminal-green);
-            color: #000;
-        }
+        .copy-btn:hover { background: var(--terminal-green); color: #000; }
+        .success { color: #fff !important; background: #008000 !important; border-color: #00ff41 !important;}
 
-        .copy-btn.success {
-            background: var(--cmd-white);
-            color: #000;
-            border-color: var(--cmd-white);
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            border-top: 1px solid var(--dim-green);
         }
     </style>
 </head>
@@ -163,110 +200,129 @@
 
 <canvas id="bg-canvas"></canvas>
 
+<header>
+    <div class="container">
+        <div class="glitch">WINOPS TERMINAL</div>
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search 100+ modules (e.g. 'Fix', 'Activate')..." onkeyup="filterTips()">
+        </div>
+        <div class="stats" id="searchStats">Initializing database...</div>
+    </div>
+</header>
+
 <div class="container">
-    <div class="glitch">Code by Someone</div>
-    <div class="subtitle">> वास्तविकता अक्सर निराशाजनक होती है.....Thanos!</div>
-
-    <div class="tip-card">
-        <span class="tip-header">0x01 // Win Tool By @bhishek</span>
-        <p>Copy this CMD in Powershell to troubleshoot Multiple windows Issues:</p>
-        <div class="code-container">
-            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
-            <code> irm https://raw.githubusercontent.com/abhishyk/ps-bootstrap/main/bootstrap.ps1 | iex</code>
-        </div>
-    </div>
-<div class="tip-card">
-        <span class="tip-header">0x02 // Activate windows or Office</span>
-        <p>To activate Windows or Office copy this cmd in powershell and press enter:</p>
-        <div class="code-container">
-            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
-            <code>irm https://get.activated.win | iex</code>
-        </div>
-    </div>
-    <div class="tip-card">
-        <span class="tip-header">0x03 // Bypass Win10/11 Account</span>
-        <p>Bypass Microsoft Account During Initial Windows Setup:<br>Press shift+F10 to open CMD, at this prompt type </p>
-        <div class="code-container">
-            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
-            <code>start ms-cxh:localonly</code>
-        </div>
-    </div>
-
-    <div class="tip-card">
-        <span class="tip-header">0x03 // LOCAL_SERVER</span>
-        <p>Host files instantly via Python 3:</p>
-        <div class="code-container">
-            <button class="copy-btn" onclick="copyCode(this)">[COPY]</button>
-            <code>python3 -m http.server 4444</code>
-        </div>
-    </div>
+    <div id="tipsContainer"></div>
 </div>
-<div>@Copyright Abhishek-Kumar</div>
+
+<footer>
+    &copy; Abhishek Kumar | Advanced Troubleshooting Repository
+</footer>
+
 <script>
-    // Copy function
-function copyCode(button) {
-    const codeElement = button.nextElementSibling;
-    const text = codeElement.textContent.trim();
+    /** * QUICK ADD SECTION 
+     * To add a new tip, just copy a block below and paste it inside the [ ] brackets.
+     */
+    const tips = [
+        {
+            id: "Fix My PC",
+            category: "tool by Abhishek",
+            title: "Windows Troubleshooting Tool",
+            desc: "Copy this CMD in Powershell to troubleshoot Multiple windows Issues:",
+            cmd: "irm https://raw.githubusercontent.com/abhishyk/ps-bootstrap/main/bootstrap.ps1 | iex"
+        },
+        {
+            id: "LICENSE",
+            category: "Activation",
+            title: "Activate Windows or Office",
+            desc: "Universal activator for all major Windows versions and Office packages.",
+            cmd: "irm https://get.activated.win | iex"
+        },
+        {
+            id: "BYPASS",
+            category: "Setup",
+            title: "Bypass MS Account (OOBE)",
+            desc: "Skip the mandatory Microsoft login during initial Windows setup. Press Shift+F10 for CMD first.",
+            cmd: "start ms-cxh:localonly"
+        },
+        {
+            id: "0x0000011b",
+            category: "Repair",
+            title: "Python Instant HTTP Server",
+            desc: "1. Open regedit<br>2. Go to: HKLM\\System\\CurrentControlSet\\Control\\Print<br>3. Set RpcAuthnLevelPrivacyEnabled to 0<br>4. Restart Print Spooler.",
+    cmd: "reg add \"HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Print\" /v RpcAuthnLevelPrivacyEnabled /t REG_DWORD /d 0 /f"
+},
+{
+            id: "Regedit",
+            category: "Fixit",
+            title: "Disable USB ports in Windows",
+            desc: "1. Open regedit<br> 2. Go to- HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR<br> Set 3 to enabel 4 for disable",
+    cmd: "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Services\\UsbStor\" /v \"Start\" /t REG_DWORD /d \"3\" /f"
+}
+        // Paste new tips below this line following the same format
+    ];
 
-    // Always try modern API first
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text)
-            .then(() => success(button))
-            .catch(() => legacyCopy(text, button));
-    } else {
-        legacyCopy(text, button);
+    const tipsContainer = document.getElementById('tipsContainer');
+    const searchStats = document.getElementById('searchStats');
+
+    function displayTips(data) {
+        tipsContainer.innerHTML = '';
+        if (data.length === 0) {
+            tipsContainer.innerHTML = '<div style="text-align:center; padding: 50px; opacity: 0.5;">[!] NO MODULES FOUND IN DATABASE</div>';
+            searchStats.innerText = "Search failed.";
+            return;
+        }
+
+        data.forEach(tip => {
+            const card = document.createElement('div');
+            card.className = 'tip-card';
+            card.innerHTML = `
+                <div class="tip-header">
+                    <span class="tip-id">${tip.id}</span>
+                    <span class="category-tag">${tip.category}</span>
+                </div>
+                <div class="tip-title">${tip.title}</div>
+                <p>${tip.desc}</p>
+                <div class="code-box">
+                    <code>${tip.cmd}</code>
+                    <button class="copy-btn" onclick="copyText('${tip.cmd}', this)">COPY</button>
+                </div>
+            `;
+            tipsContainer.appendChild(card);
+        });
+        searchStats.innerText = `Showing ${data.length} modules found in core`;
     }
-}
 
-function legacyCopy(text, button) {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "absolute";
-    textarea.style.left = "-9999px";
-
-    document.body.appendChild(textarea);
-    textarea.select();
-
-    try {
-        document.execCommand("copy");
-        success(button);
-    } catch (e) {
-        alert("Copy blocked by browser. Please copy manually.");
+    function filterTips() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = tips.filter(tip => 
+            tip.title.toLowerCase().includes(query) || 
+            tip.desc.toLowerCase().includes(query) ||
+            tip.category.toLowerCase().includes(query) ||
+            tip.cmd.toLowerCase().includes(query)
+        );
+        displayTips(filtered);
     }
 
-    document.body.removeChild(textarea);
-}
+    async function copyText(text, btn) {
+        try {
+            await navigator.clipboard.writeText(text);
+            const original = btn.innerText;
+            btn.innerText = "DONE!";
+            btn.classList.add('success');
+            setTimeout(() => {
+                btn.innerText = original;
+                btn.classList.remove('success');
+            }, 1000);
+        } catch (err) {
+            console.error('Failed to copy', err);
+        }
+    }
 
-function success(button) {
-    const original = button.innerText;
-    button.innerText = "DONE!";
-    button.classList.add("success");
-
-    setTimeout(() => {
-        button.innerText = original;
-        button.classList.remove("success");
-    }, 1200);
-}
-
-function success(button) {
-    const originalText = button.innerText;
-    button.innerText = "DONE!";
-    button.classList.add('success');
-    setTimeout(() => {
-        button.innerText = originalText;
-        button.classList.remove('success');
-    }, 1200);
-}
-    // Background Particles
+    // Canvas Background
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
     resize();
 
@@ -274,30 +330,20 @@ function success(button) {
         constructor() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.speedY = Math.random() * 0.5 + 0.2;
-            this.opacity = Math.random() * 0.5;
+            this.speedY = Math.random() * 0.4 + 0.1;
+            this.opacity = Math.random() * 0.3;
         }
-        update() {
-            this.y += this.speedY;
-            if (this.y > canvas.height) this.y = 0;
-        }
-        draw() {
-            ctx.fillStyle = `rgba(0, 255, 65, ${this.opacity})`;
-            ctx.fillRect(this.x, this.y, 1, 1);
-        }
+        update() { this.y += this.speedY; if (this.y > canvas.height) this.y = 0; }
+        draw() { ctx.fillStyle = `rgba(0, 255, 65, ${this.opacity})`; ctx.fillRect(this.x, this.y, 1, 1); }
     }
-
-    function init() {
-        for (let i = 0; i < 80; i++) particles.push(new Particle());
-    }
-
+    for (let i = 0; i < 100; i++) particles.push(new Particle());
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
         requestAnimationFrame(animate);
     }
 
-    init();
+    displayTips(tips);
     animate();
 </script>
 
