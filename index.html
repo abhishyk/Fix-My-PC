@@ -238,6 +238,13 @@
             cmd: "irm https://get.activated.win | iex"
         },
         {
+            id: "Bypass SSL Tunnel",
+            category: "Bypass",
+            title: "Bypasss SSL Tunnel Powershell",
+            desc: "Use this Powershell cmd when getting SSL error while running Activate cmd .",
+            cmd: "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
+        },
+        {
             id: "BYPASS",
             category: "Setup",
             title: "Bypass MS Account (OOBE)",
