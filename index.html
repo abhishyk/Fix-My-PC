@@ -265,13 +265,7 @@
             desc: "1. Open regedit<br> 2. Go to- HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR<br> Set 3 to enabel 4 for disable",
     cmd: "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Services\\UsbStor\" /v \"Start\" /t REG_DWORD /d \"3\" /f"
 }
-        {
-            id: "Powershell",
-            category: "Fixit",
-            title: "Bypass SSL Tunnel.",
-            desc: "1. Open Powershell in admin mode and run this cmd ",
-    cmd: "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
-}
+    
         // Paste new tips below this line following the same format
     ];
 
