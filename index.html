@@ -1,374 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinOps Terminal | Abhishek</title>
-    <style>
-        :root {
-            --bg-color: #080808;
-            --terminal-green: #00ff41;
-            --dim-green: #003b00;
-            --card-bg: rgba(10, 15, 10, 0.9);
-            --text-main: #00ff41;
-            --cmd-white: #e0e0e0;
-            --glow: 0 0 15px rgba(0, 255, 65, 0.3);
-        }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Segoe UI', 'Courier New', monospace;
-            margin: 0;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #050a05; color: #00e639; font-family: 'Consolas', 'Courier New', monospace; min-height: 100vh; }
+  .scanline { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); pointer-events: none; z-index: 999; }
+  header { background: rgba(0,0,0,0.92); border-bottom: 1px solid #0a3a0a; padding: 24px 20px 18px; position: sticky; top: 0; z-index: 50; }
+  .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 4px; text-align: center; text-transform: uppercase; color: #00ff41; margin-bottom: 16px; }
+  .logo span { color: #005a10; }
+  .search-bar { max-width: 560px; margin: 0 auto; position: relative; }
+  .search-bar input { width: 100%; background: #000; border: 1px solid #0a3a0a; color: #00e639; font-family: inherit; font-size: 0.9rem; padding: 10px 16px 10px 36px; outline: none; border-radius: 3px; transition: border 0.2s, box-shadow 0.2s; }
+  .search-bar input:focus { border-color: #00ff41; box-shadow: 0 0 0 2px rgba(0,255,65,0.1); }
+  .search-bar input::placeholder { color: #1a4a1a; }
+  .prompt { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #00ff41; font-size: 0.85rem; pointer-events: none; }
+  .stats { text-align: center; font-size: 0.72rem; margin-top: 10px; color: #1f5c1f; }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 20px 80px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+  .card { background: #020d02; border: 1px solid #0a2a0a; border-radius: 4px; padding: 18px; transition: border-color 0.2s, transform 0.15s; cursor: default; }
+  .card:hover { border-color: #00c030; transform: translateY(-2px); }
+  .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .badge { background: #00ff41; color: #000; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .tag { border: 1px solid #0f4a0f; color: #00a020; font-size: 0.62rem; padding: 2px 7px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-title { color: #d0ffd0; font-size: 1rem; font-weight: bold; margin-bottom: 8px; line-height: 1.3; }
+  .card-desc { color: #3a7a3a; font-size: 0.8rem; line-height: 1.5; margin-bottom: 14px; font-family: 'Segoe UI', sans-serif; }
+  .code-wrap { background: #000; border: 1px solid #0a1a0a; border-radius: 3px; padding: 12px 80px 12px 14px; position: relative; }
+  .code-wrap code { color: #c8ffc8; font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; line-height: 1.4; display: block; }
+  .copy-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #000; border: 1px solid #0a3a0a; color: #00e639; font-family: inherit; font-size: 0.65rem; font-weight: bold; padding: 5px 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 2px; transition: all 0.15s; white-space: nowrap; }
+  .copy-btn:hover { background: #00ff41; color: #000; border-color: #00ff41; }
+  .copy-btn.done { background: #003300; color: #00ff41; border-color: #00ff41; }
+  .empty { text-align: center; padding: 60px 20px; color: #0a3a0a; font-size: 0.9rem; }
+  footer { text-align: center; padding: 30px; font-size: 0.7rem; color: #0a2a0a; border-top: 1px solid #050d05; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+</style>
 
-        /* CRT Scanline Effect */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            z-index: 100;
-            background-size: 100% 3px;
-            pointer-events: none;
-        }
-
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
-
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(5, 5, 5, 0.95);
-            padding: 20px 0;
-            border-bottom: 1px solid var(--dim-green);
-            z-index: 50;
-            backdrop-filter: blur(10px);
-        }
-
-        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-
-        .glitch {
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 15px;
-            color: var(--terminal-green);
-        }
-
-        .search-wrapper {
-            position: relative;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        #searchInput {
-            width: 100%;
-            background: #000;
-            border: 1px solid var(--dim-green);
-            padding: 12px 20px;
-            color: var(--terminal-green);
-            font-family: inherit;
-            font-size: 1rem;
-            border-radius: 4px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        #searchInput:focus {
-            border-color: var(--terminal-green);
-            box-shadow: var(--glow);
-        }
-
-        .stats {
-            font-size: 0.8rem;
-            margin-top: 10px;
-            text-align: center;
-            opacity: 0.7;
-        }
-
-        #tipsContainer { margin-top: 30px; padding-bottom: 100px; }
-
-        .tip-card {
-    background: var(--card-bg);
-    border: 1px solid var(--dim-green);
-    padding: 20px;
-    margin-bottom: 25px; /* Added more space between cards */
-    border-radius: 4px;
-    transition: transform 0.2s, border 0.3s;
-    
-    /* FIXES FOR OVERFLOW */
-    height: auto;           /* Let it grow naturally */
-    min-height: 100px;      /* Minimum size */
-    display: block;         /* Ensure it behaves as a block */
-    overflow: hidden;       /* Keep child elements inside rounded corners */
-}
-
-        .tip-card:hover {
-            border-color: var(--terminal-green);
-            transform: translateX(5px);
-            box-shadow: var(--glow);
-        }
-
-        .tip-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .tip-id {
-            background: var(--terminal-green);
-            color: #000;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .category-tag {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            border: 1px solid var(--terminal-green);
-            padding: 1px 6px;
-        }
-
-        .tip-title {
-            font-size: 1.2rem;
-            margin: 10px 0;
-            color: #fff;
-            font-weight: bold;
-        }
-
-       .code-box {
-    position: relative;
-    background: #000;
-    border: 1px solid #222;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 3px;
-    
-    /* FIXES FOR LONG COMMANDS */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-        code {
-    color: var(--cmd-white);
-    font-family: 'Consolas', monospace;
-    font-size: 0.95rem;
-    
-    /* These lines prevent the command from shooting out the right side */
-    white-space: pre-wrap;      /* Wraps the text to next line */
-    word-break: break-all;     /* Breaks long strings */
-    display: block;
-    width: 85%;                /* Leaves space for the copy button */
-}
-
-        .copy-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #1a1a1a;
-            color: var(--terminal-green);
-            border: 1px solid var(--dim-green);
-            padding: 5px 12px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .copy-btn:hover { background: var(--terminal-green); color: #000; }
-        .success { color: #fff !important; background: #008000 !important; border-color: #00ff41 !important;}
-
-        footer {
-            text-align: center;
-            padding: 40px;
-            font-size: 0.8rem;
-            opacity: 0.5;
-            border-top: 1px solid var(--dim-green);
-        }
-    </style>
-</head>
-<body>
-
-<canvas id="bg-canvas"></canvas>
+<div class="scanline"></div>
 
 <header>
-    <div class="container">
-        <div class="glitch">WINOPS TERMINAL</div>
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search 100+ modules (e.g. 'Fix', 'Activate')..." onkeyup="filterTips()">
-        </div>
-        <div class="stats" id="searchStats">Initializing database...</div>
-    </div>
+  <div class="logo">WIN<span>//</span>OPS <span>TERMINAL</span></div>
+  <div class="search-bar">
+    <span class="prompt">&gt;_</span>
+    <input type="text" id="q" placeholder="Search modules... (fix, activate, bypass...)" oninput="render()">
+  </div>
+  <div class="stats" id="stats">Initializing...</div>
 </header>
 
-<div class="container">
-    <div id="tipsContainer"></div>
-</div>
+<main>
+  <div class="grid" id="grid"></div>
+</main>
 
-<footer>
-    &copy; Abhishek Kumar | Advanced Troubleshooting Repository
-</footer>
+<footer>© Abhishek Kumar &nbsp;|&nbsp; Advanced Troubleshooting Repository</footer>
 
 <script>
-    /** * QUICK ADD SECTION 
-     * To add a new tip, just copy a block below and paste it inside the [ ] brackets.
-     */
-    const tips = [
-        {
-            id: "Fix My PC",
-            category: "tool by Abhishek",
-            title: "Windows Troubleshooting Tool",
-            desc: "Copy this CMD in Powershell to troubleshoot Multiple windows Issues:",
-            cmd: "irm https://raw.githubusercontent.com/abhishyk/ps-bootstrap/main/bootstrap.ps1 | iex"
-        },
-        {
-            id: "LICENSE",
-            category: "Activation",
-            title: "Activate Windows or Office",
-            desc: "Universal activator for all major Windows versions and Office packages.",
-            cmd: "irm https://get.activated.win | iex"
-        },
-        {
-            id: "Bypass SSL Tunnel",
-            category: "Bypass",
-            title: "Bypasss SSL Tunnel Powershell",
-            desc: "Use this Powershell cmd when getting SSL error while running Activate cmd .",
-            cmd: "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
-        },
-        {
-            id: "BYPASS",
-            category: "Setup",
-            title: "Bypass MS Account (OOBE)",
-            desc: "Skip the mandatory Microsoft login during initial Windows setup. Press Shift+F10 for CMD first.",
-            cmd: "start ms-cxh:localonly"
-        }, 
-        {
-            id: "0x0000011b",
-            category: "Printer Repair",
-            title: "Printer not Connecting",
-            desc: "1. Open regedit<br>2. Go to: HKLM\\System\\CurrentControlSet\\Control\\Print<br>3. Set RpcAuthnLevelPrivacyEnabled to 0<br>4. Restart Print Spooler.",
-    cmd: "reg add \"HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Print\" /v RpcAuthnLevelPrivacyEnabled /t REG_DWORD /d 0 /f"
-},
-{
-            id: "Regedit",
-            category: "Fixit",
-            title: "Disable USB ports in Windows",
-            desc: "1. Open regedit<br> 2. Go to- HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR<br> Set 3 to enable 4 for disable",
-    cmd: "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Services\\UsbStor\" /v \"Start\" /t REG_DWORD /d \"3\" /f"
-},
-        {
-            id: "Powershell 2.0",
-            category: "Fixit",
-            title: "Fixes for PowerShell 2.0 script errors",
-            desc: "1. Open gpedit<br> 2. Go to- Computer Configuration → Administrative Templates → Windows Components → Windows PowerShell → Turn on Script Execution<br> Set it to enable<br> set Allow all script ",
-    cmd: "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Services\\UsbStor\" /v \"Start\" /t REG_DWORD /d \"3\" /f"
+const tips = [
+  { id:"Fix My PC", cat:"Tool by Abhishek", title:"Windows Troubleshooting Tool", desc:"Copy this CMD in PowerShell to troubleshoot multiple Windows issues.", cmd:"irm https://raw.githubusercontent.com/abhishyk/ps-bootstrap/main/bootstrap.ps1 | iex" },
+  { id:"LICENSE", cat:"Activation", title:"Activate Windows or Office", desc:"Universal activator for all major Windows versions and Office packages.", cmd:"irm https://get.activated.win | iex" },
+  { id:"Bypass SSL Tunnel", cat:"Bypass", title:"Bypass SSL Tunnel (PowerShell)", desc:"Use this PowerShell command when getting an SSL error while running the Activate command.", cmd:"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12" },
+  { id:"BYPASS", cat:"Setup", title:"Bypass MS Account (OOBE)", desc:"Skip the mandatory Microsoft login during initial Windows setup. Press Shift+F10 for CMD first.", cmd:"start ms-cxh:localonly" },
+  { id:"0x0000011b", cat:"Printer Repair", title:"Printer Not Connecting", desc:"Open regedit → HKLM\\System\\CurrentControlSet\\Control\\Print → set RpcAuthnLevelPrivacyEnabled to 0 → restart Print Spooler.", cmd:`reg add "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Print" /v RpcAuthnLevelPrivacyEnabled /t REG_DWORD /d 0 /f` },
+  { id:"Regedit", cat:"Fixit", title:"Disable USB Ports in Windows", desc:"Open regedit → HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\USBSTOR → set Start to 3 (enable) or 4 (disable).", cmd:`reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\UsbStor" /v "Start" /t REG_DWORD /d "3" /f` },
+  { id:"PowerShell 2.0", cat:"Fixit", title:"Fix PowerShell Script Execution Errors", desc:"Open gpedit → Computer Configuration → Administrative Templates → Windows Components → Windows PowerShell → Turn on Script Execution → Enable → Allow all scripts.", cmd:`Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force` }
+];
+
+function copyText(text, btn) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => flash(btn)).catch(() => fallbackCopy(text, btn));
+    } else {
+      fallbackCopy(text, btn);
+    }
+  } catch(e) { fallbackCopy(text, btn); }
 }
-    
-        // Paste new tips below this line following the same format
-    ];
 
-    const tipsContainer = document.getElementById('tipsContainer');
-    const searchStats = document.getElementById('searchStats');
+function fallbackCopy(text, btn) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); flash(btn); } catch(e) { btn.textContent = 'ERR'; }
+  document.body.removeChild(ta);
+}
 
-    function displayTips(data) {
-        tipsContainer.innerHTML = '';
-        if (data.length === 0) {
-            tipsContainer.innerHTML = '<div style="text-align:center; padding: 50px; opacity: 0.5;">[!] NO MODULES FOUND IN DATABASE</div>';
-            searchStats.innerText = "Search failed.";
-            return;
-        }
+function flash(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'DONE ✓';
+  btn.classList.add('done');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('done'); }, 1200);
+}
 
-        data.forEach(tip => {
-    const card = document.createElement('div');
-    card.className = 'tip-card';
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const filtered = tips.filter(t =>
+    !q || t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) ||
+    t.cat.toLowerCase().includes(q) || t.cmd.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
+  );
+  const grid = document.getElementById('grid');
+  document.getElementById('stats').textContent = `Showing ${filtered.length} of ${tips.length} modules`;
 
-    card.innerHTML = `
-        <div class="tip-header">
-            <span class="tip-id">${tip.id}</span>
-            <span class="category-tag">${tip.category}</span>
-        </div>
-        <div class="tip-title">${tip.title}</div>
-        <p>${tip.desc}</p>
-        <div class="code-box">
-            <code>${tip.cmd}</code>
-            <button class="copy-btn">COPY</button>
-        </div>
-    `;
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">[!] No modules found in database</div>';
+    return;
+  }
 
-    const btn = card.querySelector('.copy-btn');
+  grid.innerHTML = filtered.map((t, i) => `
+    <div class="card">
+      <div class="card-meta">
+        <span class="badge">${t.id}</span>
+        <span class="tag">${t.cat}</span>
+      </div>
+      <div class="card-title">${t.title}</div>
+      <div class="card-desc">${t.desc}</div>
+      <div class="code-wrap">
+        <code id="cmd-${i}">${t.cmd.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code>
+        <button class="copy-btn" onclick="copyText(tips[${tips.indexOf(t)}].cmd, this)">COPY</button>
+      </div>
+    </div>
+  `).join('');
+}
 
-    btn.addEventListener('click', () => {
-        copyText(tip.cmd, btn);
-    });
-
-    tipsContainer.appendChild(card);
-});
-        searchStats.innerText = `Showing ${data.length} modules found in core`;
-    }
-
-    function filterTips() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = tips.filter(tip => 
-            tip.title.toLowerCase().includes(query) || 
-            tip.desc.toLowerCase().includes(query) ||
-            tip.category.toLowerCase().includes(query) ||
-            tip.cmd.toLowerCase().includes(query)
-        );
-        displayTips(filtered);
-    }
-
-    async function copyText(text, btn) {
-        try {
-            await navigator.clipboard.writeText(text);
-            const original = btn.innerText;
-            btn.innerText = "DONE!";
-            btn.classList.add('success');
-            setTimeout(() => {
-                btn.innerText = original;
-                btn.classList.remove('success');
-            }, 1000);
-        } catch (err) {
-            console.error('Failed to copy', err);
-        }
-    }
-
-    // Canvas Background
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize);
-    resize();
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.speedY = Math.random() * 0.4 + 0.1;
-            this.opacity = Math.random() * 0.3;
-        }
-        update() { this.y += this.speedY; if (this.y > canvas.height) this.y = 0; }
-        draw() { ctx.fillStyle = `rgba(0, 255, 65, ${this.opacity})`; ctx.fillRect(this.x, this.y, 1, 1); }
-    }
-    for (let i = 0; i < 100; i++) particles.push(new Particle());
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-
-    displayTips(tips);
-    animate();
+render();
 </script>
-
-</body>
-</html>
