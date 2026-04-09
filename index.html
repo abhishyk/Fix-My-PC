@@ -288,22 +288,30 @@
         }
 
         data.forEach(tip => {
-            const card = document.createElement('div');
-            card.className = 'tip-card';
-            card.innerHTML = `
-                <div class="tip-header">
-                    <span class="tip-id">${tip.id}</span>
-                    <span class="category-tag">${tip.category}</span>
-                </div>
-                <div class="tip-title">${tip.title}</div>
-                <p>${tip.desc}</p>
-                <div class="code-box">
-                    <code>${tip.cmd}</code>
-                    <button class="copy-btn" onclick="copyText('${tip.cmd}', this)">COPY</button>
-                </div>
-            `;
-            tipsContainer.appendChild(card);
-        });
+    const card = document.createElement('div');
+    card.className = 'tip-card';
+
+    card.innerHTML = `
+        <div class="tip-header">
+            <span class="tip-id">${tip.id}</span>
+            <span class="category-tag">${tip.category}</span>
+        </div>
+        <div class="tip-title">${tip.title}</div>
+        <p>${tip.desc}</p>
+        <div class="code-box">
+            <code>${tip.cmd}</code>
+            <button class="copy-btn">COPY</button>
+        </div>
+    `;
+
+    const btn = card.querySelector('.copy-btn');
+
+    btn.addEventListener('click', () => {
+        copyText(tip.cmd, btn);
+    });
+
+    tipsContainer.appendChild(card);
+});
         searchStats.innerText = `Showing ${data.length} modules found in core`;
     }
 
